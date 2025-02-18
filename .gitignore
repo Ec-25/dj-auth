@@ -3,6 +3,7 @@
 __pycache__/
 temp/
 env/
+static/
 
 # files
 .env
