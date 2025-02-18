@@ -19,6 +19,8 @@ Before starting the application, make sure you have set the following variables 
 
 ```
 SECRET_KEY="your-secret-key"  # Secret key for Django application
+EMAIL_HOST_USER="your-email"  # Your email address
+EMAIL_HOST_PASSWORD="your-email-password"  # Your email password
 ```
 
 ### Optional variables
@@ -27,6 +29,9 @@ These variables are optional and control the behavior of the application:
 ```
 ALLOWED_HOSTS="host1,host2"    # Comma-separated list of allowed hosts
 DEBUG="True"                   # Set to False in production environment for security
+EMAIL_HOST="smtp.gmail.com"    # SMTP server for sending emails (default: smtp.gmail.com)
+EMAIL_PORT="587"               # Port for SMTP (default: 587)
+EMAIL_USE_TLS="True"           # Whether to use TLS for email (default: True)
 ```
 
 ## Main Classes and Methods
@@ -88,6 +93,14 @@ The following are the main endpoints for user-related actions:
 - `POST /logout/` - Logs out the current user.
 - `GET /password/change/` - Page to change the user's password.
 - `POST /password/change/` - Submit the password change form.
+
+### Password Reset: /password_reset/
+- `GET /password_reset/` - Page to request a password reset.
+- `POST /password_reset/` - Submit the email to reset the password.
+- `GET /password_reset/done/` - Page indicating that the reset email has been sent.
+- `GET /reset/<uidb64>/<token>/` - Page to confirm the password reset with the provided token.
+- `POST /reset/<uidb64>/<token>/` - Submit the new password after confirmation.
+- `GET /reset/done/` - Page indicating that the password has been successfully reset.
 
 ## Run Server
 To start the server, run:
