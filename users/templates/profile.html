@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ request.user.full_name }} Profile{% endblock %}
+
+{% block content %}
+<div class="container col-md-6 mt-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white text-center">
+      <h4>User Profile</h4>
+    </div>
+    <div class="card-body bg-light">
+      <div class="container">
+        <div class="row mb-3">
+          <div class="col">
+            <label class="fw-semibold">Username:</label>
+            <p class="form-control-plaintext">{{ user.username }}</p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col">
+            <label class="fw-semibold">Email:</label>
+            <p class="form-control-plaintext">{{ user.email }}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label class="fw-semibold">First Name:</label>
+            <p class="form-control-plaintext">{{ user.first_name }}</p>
+          </div>
+          <div class="col">
+            <label class="fw-semibold">Last Name:</label>
+            <p class="form-control-plaintext">{{ user.last_name }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer text-center">
+      <div class="d-flex gap-2">
+        <a href="{% url 'profile-update-page' %}" class="btn btn-primary flex-fill">Edit Profile</a>
+        <a href="{% url 'password_change-page' %}" class="btn btn-outline-secondary flex-fill">Change
+          Password</a>
+      </div>
+      <div class="mt-2">
+        <a href="{% url 'profile-delete-page' %}" class="btn btn-danger w-100">Delete Account</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

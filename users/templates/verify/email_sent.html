@@ -4,14 +4,15 @@
 
 {% block content %}
 <div class="col-md-6 border rounded p-5 my-4 mx-auto text-center shadow">
-    <h2 class="mb-3">📩 Verify your email</h2>
-    <p class="text-muted">
-        We've sent a verification link to your email.
-        Please check your inbox (and spam folder, just in case).
-    </p>
-    <p class="fw-semibold">
-        If you did not receive the email, you can <a href="{% url 'resend_verification-page' %}" class="text-decoration-none">resend it here</a>.
-    </p>
-    <a href="{% url 'register-page' %}" class="btn btn-primary mt-3">Return to registration</a>
+  <h2 class="mb-3">📩 Verify your email</h2>
+  <p class="text-muted">
+    We've sent a verification link to your email.
+    Please check your inbox (and spam folder, just in case).
+  </p>
+  <p class="fw-semibold">
+    If you did not receive the email, you can <a href="{% url 'resend_verification-page' %}"
+      class="text-decoration-none">resend it here</a>.
+  </p>
+  <a href="{% url 'register-page' %}" class="btn btn-primary mt-3">Return to registration</a>
 </div>
 {% endblock %}

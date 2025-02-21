@@ -98,3 +98,40 @@ class UserChangePasswordForm(PasswordChangeForm):
         "placeholder": "",
         "maxlength": "127"
     }), label="Confirm New Password", required=True)
+
+
+class UserUpdateForm(forms.ModelForm):
+    username = forms.CharField(widget=forms.TextInput(attrs={
+        "class": "form-control",
+        "placeholder": "username",
+        "maxlength": "127"
+    }), label="Username", required=True)
+    email = forms.CharField(widget=forms.EmailInput(attrs={
+        "class": "form-control",
+        "placeholder": "example@email.net",
+        "maxlength": "127"
+    }), label="Email", required=True)
+    first_name = forms.CharField(widget=forms.TextInput(attrs={
+        "class": "form-control",
+        "placeholder": "first name",
+        "maxlength": "127"
+    }), label="First Name", required=False)
+    last_name = forms.CharField(widget=forms.TextInput(attrs={
+        "class": "form-control",
+        "placeholder": "last name",
+        "maxlength": "127"
+    }), label="Last Name", required=False)
+
+    class Meta:
+        model = User
+        fields = ["username", "email", "first_name", "last_name"]
+
+
+class UserDeleteForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["password"]
+        widgets = {
+            "password": forms.PasswordInput(
+                attrs={"class": "form-control", "placeholder": "Enter your password"})
+        }

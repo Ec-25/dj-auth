@@ -187,6 +187,118 @@ class UserAuthTests(TestCase):
         response = self.client.get(reverse("home-page"))
         self.assertEqual(response.status_code, 200)
 
+    def test_view_profile_authenticated_user(self):
+        """Test that a logged-in user can view their profile."""
+        self.client.login(username="testuser", password="securepassword")
+
+        url = reverse("profile-page")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "profile.html")
+        self.assertEqual(response.context["user"], self.user)
+
+    def test_view_profile_unauthenticated_user(self):
+        """Test that an unauthenticated user is redirected to login page."""
+        url = reverse("profile-page")
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/auth/login/?next={url}")
+
+    def test_update_view_authenticated_user(self):
+        """Test that a logged-in user can update their profile."""
+        self.client.login(username="testuser", password="securepassword")
+
+        data = {
+            "first_name": "NewFirstName",
+            "last_name": "NewLastName",
+            "email": "newemail@example.com",
+            "username": "newusername"
+        }
+
+        url = reverse("profile-update-page")
+        response = self.client.post(url, data)
+
+        self.assertRedirects(response, reverse("profile-page"))
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, "NewFirstName")
+        self.assertEqual(self.user.last_name, "NewLastName")
+        self.assertEqual(self.user.email, "newemail@example.com")
+        self.assertEqual(self.user.username, "newusername")
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(
+            str(messages[0]), "Your profile has been updated successfully.")
+
+    def test_update_view_unauthenticated_user(self):
+        """Test that an unauthenticated user is redirected to login page."""
+        url = reverse("profile-update-page")
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/auth/login/?next={url}")
+
+    def test_update_view_invalid_form_data(self):
+        """Test that submitting invalid data in the form gives an error."""
+        self.client.login(username="testuser", password="securepassword")
+
+        data = {
+            "first_name": "NewFirstName",
+            "last_name": "NewLastName",
+            "email": "invalidemail",
+            "username": "newusername"
+        }
+
+        url = reverse("profile-update-page")
+        response = self.client.post(url, data)
+
+        htmlErrors = response.context.get("errors")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(htmlErrors)
+        self.assertIn("Enter a valid email address.", htmlErrors)
+
+    def test_delete_view_authenticated_user(self):
+        """Test that a logged-in user can delete their profile."""
+        self.client.login(username="testuser", password="securepassword")
+
+        data = {
+            "password": "securepassword"
+        }
+
+        url = reverse("profile-delete-page")
+        response = self.client.post(url, data)
+
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(
+            str(messages[0]), "Your account has been disabled successfully.")
+
+    def test_delete_view_unauthenticated_user(self):
+        """Test that an unauthenticated user is redirected to login page."""
+        url = reverse("profile-delete-page")
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/auth/login/?next={url}")
+
+    def test_delete_view_invalid_form_data(self):
+        """Test that submitting invalid data in the form gives an error."""
+        self.client.login(username="testuser", password="securepassword")
+
+        data = {
+            "password": "falsePassword"
+        }
+
+        url = reverse("profile-delete-page")
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "delete_profile.html")
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(
+            str(messages[0]), "Incorrect password. Please try again.")
+
     def test_change_password_view(self):
         """Tests that a user can change their password."""
         self.client.login(username="testuser", password="securepassword")

@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import View, CreateView
+from django.views.generic import View, CreateView, UpdateView
 
-from .forms import ResendVerificationForm, UserChangePasswordForm, UserRegisterForm, UserLoginForm
+from .forms import ResendVerificationForm, UserChangePasswordForm, UserDeleteForm, UserRegisterForm, UserLoginForm, UserUpdateForm
 from .models import User
 from .utils import (
     generate_user_verification_tokens,
@@ -97,9 +98,7 @@ class UserResendVerificationView(View):
 class UserLoginView(LoginView):
     form_class = UserLoginForm
     template_name = "login.html"
-
-    def get_success_url(self):
-        return reverse_lazy("home-page")
+    next_page = reverse_lazy("home-page")
 
     def form_invalid(self, form):
         return super().form_invalid(form)
@@ -131,3 +130,62 @@ class UserChangePasswordView(PasswordChangeView):
         if not request.user.is_authenticated:
             return redirect("login-page")
         return super().dispatch(request, *args, **kwargs)
+
+
+class UserProfileView(LoginRequiredMixin, View):
+    template_name = "profile.html"
+    login_url = reverse_lazy("login-page")
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = UserUpdateForm
+    template_name = "update_profile.html"
+    success_url = reverse_lazy("profile-page")
+    login_url = reverse_lazy("login-page")
+
+    def get_object(self, queryset=None):
+        """Only allows the user to edit their own profile."""
+        return self.request.user
+
+    def form_valid(self, form):
+        messages.success(
+            self.request, "Your profile has been updated successfully.")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request, "There was an error updating your profile. Please check the form.", extra_tags="danger")
+        return super().form_invalid(form)
+
+
+class UserDeleteView(LoginRequiredMixin, View):
+    model = User
+    template_name = "delete_profile.html"
+    success_url = reverse_lazy("login-page")
+    login_url = reverse_lazy("login-page")
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def post(self, request, *args, **kwargs):
+        form = UserDeleteForm(request.POST)
+        if form.is_valid():
+            user = request.user
+            if user.check_password(form.cleaned_data["password"]):
+                user.change_status(False)
+                messages.success(
+                    request, "Your account has been disabled successfully.")
+                return redirect(self.success_url)
+
+            messages.error(
+                request, "Incorrect password. Please try again.", extra_tags="danger")
+            return render(request, self.template_name, {"form": form})
+
+        else:
+            messages.error(
+                request, "There was an error deactivating your account. Please check the form.", extra_tags="danger")
+            return render(request, self.template_name, {"form": form})

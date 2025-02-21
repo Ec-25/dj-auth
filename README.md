@@ -94,6 +94,11 @@ The following are the main endpoints for user-related actions:
 - `GET /login/` - Page for user login.
 - `POST /login/` - Submit login form.
 - `POST /logout/` - Logs out the current user.
+- `GET /profile/` - Page to view profile data.
+- `GET /profile/update/` - Page to update profile data.
+- `POST /profile/update/` - Submit profile update form.
+- `GET /profile/delete/` - Page to disable profile.
+- `POST /profile/delete/` - Submit deactivation confirmation form.
 - `GET /password/change/` - Page to change the user's password.
 - `POST /password/change/` - Submit the password change form.
 

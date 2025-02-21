@@ -8,10 +8,13 @@ from django.urls import path
 
 from .views import (
     UserChangePasswordView,
+    UserDeleteView,
+    UserProfileView,
     UserRegisterView,
     UserLoginView,
     UserLogoutView,
     UserResendVerificationView,
+    UserUpdateView,
     UserVerifyView,
     home_view
 )
@@ -23,6 +26,9 @@ urlpatterns = [
     path("verify/<uidb64>/<token>/", UserVerifyView.as_view(), name="user-verify-page"),
     path("login/", UserLoginView.as_view(), name="login-page"),
     path("logout/", UserLogoutView.as_view(), name="logout-page"),
+    path("profile/", UserProfileView.as_view(), name="profile-page"),
+    path("profile/update/", UserUpdateView.as_view(), name="profile-update-page"),
+    path("profile/delete/", UserDeleteView.as_view(), name="profile-delete-page"),
     path("password/change/", UserChangePasswordView.as_view(), name="password_change-page"),
     path("password_reset/",
         PasswordResetView.as_view(template_name="password_reset/password_reset.html"),
