@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Resend verification{% endblock %}
+
+{% block content %}
+<div class="col-md-6 border rounded p-5 my-4 mx-auto shadow">
+    <h2 class="mb-3 text-center">🔄 Resend verification</h2>
+    <p class="text-muted text-center">
+        If you did not receive the verification email, enter your email address and we will send it to you again.
+    </p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="text-danger">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Forward mail</button>
+    </form>
+
+    <div class="text-center mt-3">
+        <a href="{% url 'login-page' %}" class="text-decoration-none">🔑 Back to login</a>
+    </div>
+</div>
+{% endblock %}

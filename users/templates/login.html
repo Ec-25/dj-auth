@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Iniciar Sesion{% endblock %}
+{% block title %}Login{% endblock %}
 {% load custom_filters %}
 
 {% block content %}
 <div class="col-md-6 border rounded p-5 my-4 mx-auto shadow-sm bg-light">
-    <h2 class="text-center mb-4">Iniciar Sesion</h2>
+    <h2 class="text-center mb-4">Sign In</h2>
     
     <form method="post">
 		{% csrf_token %}
@@ -40,11 +40,11 @@
 	</form>		  
 
     <p class="text-center mt-3">
-        ¿No tienes una cuenta? <a href="{% url 'register-page' %}" class="fw-bold text-decoration-none">Regístrate</a>
+        Don't have an account? <a href="{% url 'register-page' %}" class="fw-bold text-decoration-none">Sign up</a>
     </p>
 
 	<p class="text-center">
-		¿Te has olvidado tu contraseña? <a href="{% url 'password_reset' %}" class="fw-bold text-decoration-none">Restablecérla</a>.
+		Have you forgotten your password? <a href="{% url 'password_reset' %}" class="fw-bold text-decoration-none">Reset it</a>.
 	</p>
 </div>
 {% endblock %}

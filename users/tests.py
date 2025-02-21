@@ -1,13 +1,13 @@
+from django.contrib.messages import get_messages
 from django.core import mail
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
 
 from io import StringIO
 from unittest.mock import patch
+
+from users.utils import generate_user_verification_tokens
 
 from .models import User
 
@@ -17,25 +17,144 @@ class UserAuthTests(TestCase):
         self.user = User.objects.create_user(
             username="testuser",
             email="testuser@example.com",
-            password="securepassword"
+            password="securepassword",
+            is_active=True
         )
 
-    def test_register_view(self):
-        """Try registering a new user."""
-        response = self.client.post(reverse("register-page"), {
-            "username": "newuser",
-            "email": "newuser@example.com",
-            "password1": "securepassword",
-            "password2": "securepassword",
-        })
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username="newuser").exists())
+    def test_register_user_successfully(self):
+        register_url = reverse("register-page")
+
+        data = {
+            "username": "test",
+            "email": "test@example.com",
+            "password1": "Testpassword123!",
+            "password2": "Testpassword123!",
+        }
+        response = self.client.post(register_url, data)
+
+        user = User.objects.get(email=data["email"])
+        self.assertTrue(user)
+        self.assertEqual(user.email, "test@example.com")
+        self.assertFalse(user.is_active)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Verify your account", mail.outbox[0].subject)
+
+        self.assertTemplateUsed(response, "verify/email_sent.html")
+
+    def test_register_user_invalid_data(self):
+        register_url = reverse("register-page")
+
+        data = {
+            "username": "",
+            "email": "invalidemail",
+            "password1": "short",
+            "password2": "short",
+        }
+        response = self.client.post(register_url, data)
+
+        # No user should be created (only the setup user)
+        self.assertEqual(User.objects.count(), 1)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "register.html")
+        self.assertContains(response, "This field is required.")
+
+    def test_verify_user_successfully(self):
+        user = User.objects.create_user(
+            username="testuser2",
+            email="test2@example.com",
+            password="Testpassword123!",
+            is_active=False,
+        )
+        uidb64, token = generate_user_verification_tokens(user)
+
+        verify_url = reverse("user-verify-page",
+                             kwargs={"uidb64": uidb64, "token": token})
+
+        response = self.client.get(verify_url)
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+        self.assertRedirects(response, reverse("login-page"))
+
+    def test_verify_user_invalid_link(self):
+        user = User.objects.create_user(
+            username="testuser2",
+            email="test2@example.com",
+            password="Testpassword123!",
+            is_active=False,
+        )
+
+        uidb64 = "invalid"
+        token = "invalid"
+        invalid_url = reverse("user-verify-page",
+                              kwargs={"uidb64": uidb64, "token": token})
+
+        response = self.client.get(invalid_url)
+
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "verify/invalid_link.html")
 
     def test_register_redirect_if_logged_in(self):
         """An authenticated user should not be able to access the registration page."""
         self.client.login(username="testuser", password="securepassword")
         response = self.client.get(reverse("register-page"))
         self.assertEqual(response.status_code, 302)
+
+    def test_resend_verification_email_successfully(self):
+        """You must resend the email if the user is not verified"""
+        User.objects.create_user(
+            username="testuser2",
+            email="test2@example.com",
+            password="Testpassword123!",
+            is_active=False,
+        )
+
+        resend_url = reverse("resend_verification-page")
+        response = self.client.post(
+            resend_url, {"email": "test2@example.com"})
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Verify your account", mail.outbox[0].subject)
+
+        self.assertTemplateUsed(response, "verify/email_sent.html")
+
+    def test_user_already_verified(self):
+        """If the user is already activated, it should display a success message"""
+        resend_url = reverse("resend_verification-page")
+        response = self.client.post(
+            resend_url, {"email": self.user.email}, follow=True)
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(
+            str(messages[0]), "Your account is now activated. You can log in.")
+
+        self.assertRedirects(response, reverse("login-page"))
+
+    def test_email_not_found(self):
+        """If the email does not exist, it should display an error message"""
+        resend_url = reverse("resend_verification-page")
+        response = self.client.post(
+            resend_url, {"email": "nonexistent@example.com"}, follow=True)
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(
+            str(messages[0]), "An account with this email was not found.")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "verify/resend_verification.html")
+
+    def test_get_resend_verification_page(self):
+        """The page with the form should render correctly."""
+        resend_url = reverse("resend_verification-page")
+        response = self.client.get(resend_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "verify/resend_verification.html")
 
     def test_login_view(self):
         """Tests that a user can log in."""

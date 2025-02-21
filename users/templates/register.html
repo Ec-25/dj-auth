@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Registro{% endblock %}
+{% block title %}Register{% endblock %}
 {% load custom_filters %}
 
 {% block content %}
 <div class="col-md-6 border rounded p-5 my-4 mx-auto shadow-sm bg-light">
-    <h2 class="text-center mb-4">Crear Cuenta</h2>
+    <h2 class="text-center mb-4">Create Account</h2>
     
     <form method="post">
         {% csrf_token %}
@@ -75,11 +75,11 @@
             <div class="text-danger mb-3">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <button class="btn btn-success w-100">Registrarse</button>
+        <button class="btn btn-success w-100">Register</button>
     </form>
 
     <p class="text-center mt-3">
-        ¿Ya tienes una cuenta? <a href="{% url 'login-page' %}" class="fw-bold text-decoration-none">Inicia sesión</a>
+        Already have an account? <a href="{% url 'login-page' %}" class="fw-bold text-decoration-none">Sign in</a>
     </p>
 </div>
 {% endblock %}

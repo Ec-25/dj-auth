@@ -88,6 +88,9 @@ The following are the main endpoints for user-related actions:
 - `GET /` - Sample home page.
 - `GET /register/` - Page for user registration.
 - `POST /register/` - Submit registration form.
+- `GET /resend-verification/` - Page to resend the activation email.
+- `POST /resend-verification/` - Submit the form to resend the email.
+- `GET /verify/<uidb64>/<token>/` - Account activation point.
 - `GET /login/` - Page for user login.
 - `POST /login/` - Submit login form.
 - `POST /logout/` - Logs out the current user.
