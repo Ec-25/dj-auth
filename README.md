@@ -4,6 +4,8 @@
 ## **Description:**
 This module handles user authentication and authorization for access to the server. It provides functionality for user registration, login, password changes, and managing user roles.
 
+![dj-auth-image](https://github.com/user-attachments/assets/54e63fc1-5cfe-430d-b085-0b3873ff93db)
+
 ## Table of Contents
 - [Description](#description)
 - [Required environment variables](#required-environment-variables)
